@@ -108,7 +108,8 @@
                 const encryptedText = encrypted.ciphertext.toString(CryptoJS.enc.Base64);
                 $('#encryptedText').val(encryptedText);
                 const currentUrl = window.location.href.split('?')[0];
-                const uriEncodedEncryptedText = `${currentUrl}?enc_str=${encodeURIComponent(encryptedText)}&iv=${iv.toString()}&salt=${salt}&ref=${reference}`;
+                const encodedReference = CryptoJS.enc.Base64.stringify(CryptoJS.enc.Utf8.parse(reference));
+                const uriEncodedEncryptedText = `${currentUrl}?enc_str=${encodeURIComponent(encryptedText)}&iv=${iv.toString()}&salt=${salt}&ref=${encodedReference}`;
                 $('#uriEncodedEncryptedText').val(uriEncodedEncryptedText);
                 console.log('Encryption successful:', encryptedText);
             };
@@ -140,7 +141,8 @@
                         $('#error-message').hide();
                     }
                     const currentUrl = window.location.href.split('?')[0];
-                    const uriEncodedEncryptedText = `${currentUrl}?enc_str=${encodeURIComponent(encryptedText)}&iv=${iv.toString()}&salt=${salt}&ref=${reference}`;
+                    const encodedReference = CryptoJS.enc.Base64.stringify(CryptoJS.enc.Utf8.parse(reference));
+                    const uriEncodedEncryptedText = `${currentUrl}?enc_str=${encodeURIComponent(encryptedText)}&iv=${iv.toString()}&salt=${salt}&ref=${encodedReference}`;
                     $('#uriEncodedEncryptedText').val(uriEncodedEncryptedText);
                 } catch (e) {
                     console.error('Decryption failed:', e);
@@ -190,7 +192,7 @@
                     $('#encryptedText').val(params.enc_str);
                     $('#initializationVector').val(params.iv);
                     $('#salt').val(params.salt);
-                    $('#reference').val(params.ref);
+                    $('#reference').val(CryptoJS.enc.Utf8.stringify(CryptoJS.enc.Base64.parse(params.ref)));
                     const currentUrl = window.location.href.split('?')[0];
                     $('#uriEncodedEncryptedText').val(`${currentUrl}?enc_str=${encodeURIComponent(params.enc_str)}&iv=${params.iv}&salt=${params.salt}&ref=${params.ref}`);
                 }
@@ -202,7 +204,7 @@
                     $('#encryptedText').val(params.enc_str);
                     $('#initializationVector').val(params.iv);
                     $('#salt').val(params.salt);
-                    $('#reference').val(params.ref);
+                    $('#reference').val(CryptoJS.enc.Utf8.stringify(CryptoJS.enc.Base64.parse(params.ref)));
                     const currentUrl = window.location.href.split('?')[0];
                     $('#uriEncodedEncryptedText').val(`${currentUrl}?enc_str=${encodeURIComponent(params.enc_str)}&iv=${params.iv}&salt=${params.salt}&ref=${params.ref}`);
                 }
