@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EasyTextEncrypt</title>
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <link href="css/style.css" rel="stylesheet">
+    <script src="js/jquery.min.js"></script>
+    <script src="js/crypto-js.min.js"></script>
+</head>
+<body>
+    <main class="container">
+        <form id="encryptionForm">
+            <div class="form-group">
+                <label for="plaintext">Text</label>
+                <textarea class="form-control" id="plaintext" name="plaintext" rows="4"></textarea>
+            </div>
+            <div class="form-group">
+                <label for="passphrase">Passphrase</label>
+                <input type="password" class="form-control" id="passphrase" name="passphrase">
+            </div>
+            <div class="form-group">
+                <label for="reference">Reference</label>
+                <input type="text" class="form-control" id="reference" name="reference">
+            </div>
+            <div id="error-message" class="alert alert-danger" style="display: none;"></div>
+            <div class="button-group">
+                <button type="button" class="btn btn-success" onclick="encryptText()">Encrypt</button>
+                <button type="button" class="btn btn-danger" onclick="decryptText()">Decrypt</button>
+                <button type="button" class="btn btn-info" onclick="toggleAdvancedFields()">Show Advanced</button>
+                <button type="button" class="btn btn-warning" onclick="clearAllFields()">Clear</button>
+            </div>
+            <div class="form-group">
+                <label for="uriEncodedEncryptedText">URI Encoded String</label>
+                <span class="copy-link" onclick="copyToClipboard('#uriEncodedEncryptedText')">Copy to Clipboard</span>
+                <div class="input-group">
+                    <input type="text" class="form-control" id="uriEncodedEncryptedText" name="uriEncodedEncryptedText" readonly>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="uriInput">Paste URI Encoded String</label>
+                <textarea class="form-control" id="uriInput" name="uriInput" rows="4" placeholder="Paste URI encoded string here" oninput="populateFieldsFromURI()"></textarea>
+            </div>
+            <div id="advanced-fields" style="display: none;">
+                <div class="form-group">
+                    <label for="encryptedText">Encrypted Text</label>
+                    <input type="text" class="form-control" id="encryptedText" name="encryptedText">
+                </div>
+                <div class="form-group">
+                    <label for="initializationVector">Initialization Vector (IV)</label>
+                    <input type="text" class="form-control" id="initializationVector" name="initializationVector">
+                </div>
+                <div class="form-group">
+                    <label for="salt">Salt</label>
+                    <input type="text" class="form-control" id="salt" name="salt">
+                </div>
+                <div class="form-group">
+                    <label for="generatedKey">Generated Key</label>
+                    <input type="text" class="form-control" id="generatedKey" name="generatedKey" readonly>
+                </div>
+            </div>
+            <div class="about-section">
+                <h4>About</h4>
+                <p><strong>EasyTextEncrypt</strong></p>
+                <p>Version 1.0.0</p>
+                <p>Developer: Jason Davey</p>
+                <p><a href="https://ce.uk" target="_blank">Support</a></p>
+            </div>
+        </form>
+        <script>
+            const getUrlParams = (url) => {
+                const params = {};
+                url.replace(/[?&]+([^=&]+)=([^&]*)/gi, function (m, key, value) {
+                    params[key] = decodeURIComponent(value);
+                });
+                return params;
+            };
+
+            const generateKey = (passphrase, salt) => {
+                return CryptoJS.PBKDF2(passphrase, CryptoJS.enc.Hex.parse(salt), { keySize: 256 / 32, iterations: 1000 }).toString();
+            };
+
+            const padToLength = (str, length) => {
+                while (str.length < length) {
+                    str += '\0'; // Pad with null characters
+                }
+                return str;
+            };
+
+            const encryptText = () => {
+                const plaintext = $('#plaintext').val();
+                const passphrase = $('#passphrase').val();
+                const reference = $('#reference').val();
+
+                const fixedLength = 32; // Example fixed length
+                const paddedText = padToLength(plaintext, fixedLength);
+
+                const salt = CryptoJS.lib.WordArray.random(128 / 8).toString();
+                const key = generateKey(passphrase, salt);
+                const iv = CryptoJS.lib.WordArray.random(128 / 8);
+
+                const encrypted = CryptoJS.AES.encrypt(paddedText, CryptoJS.enc.Hex.parse(key), { iv: iv, mode: CryptoJS.mode.CBC, padding: CryptoJS.pad.Pkcs7 });
+                
+                $('#initializationVector').val(iv.toString());
+                $('#generatedKey').val(key);
+                $('#salt').val(salt);
+                const encryptedText = encrypted.ciphertext.toString(CryptoJS.enc.Base64);
+                $('#encryptedText').val(encryptedText);
+                const currentUrl = window.location.href.split('?')[0];
+                const uriEncodedEncryptedText = `${currentUrl}?enc_str=${encodeURIComponent(encryptedText)}&iv=${iv.toString()}&salt=${salt}&ref=${reference}`;
+                $('#uriEncodedEncryptedText').val(uriEncodedEncryptedText);
+                console.log('Encryption successful:', encryptedText);
+            };
+
+            const decryptText = () => {
+                const encryptedText = $('#encryptedText').val();
+                const passphrase = $('#passphrase').val();
+                const iv = CryptoJS.enc.Hex.parse($('#initializationVector').val());
+                const salt = $('#salt').val();
+                const reference = $('#reference').val();
+
+                console.log('Decryption started:', { encryptedText, passphrase, iv, salt });
+
+                const key = generateKey(passphrase, salt);
+                $('#generatedKey').val(key); // Populate the generated key
+
+                console.log('Derived key:', key);
+
+                try {
+                    const decrypted = CryptoJS.AES.decrypt({ ciphertext: CryptoJS.enc.Base64.parse(encryptedText) }, CryptoJS.enc.Hex.parse(key), { iv: iv, mode: CryptoJS.mode.CBC, padding: CryptoJS.pad.Pkcs7 });
+                    console.log('Decrypted raw data:', decrypted);
+                    let decryptedText = decrypted.toString(CryptoJS.enc.Utf8);
+                    decryptedText = decryptedText.replace(/\0+$/, ''); // Remove padding null characters
+                    console.log('Decrypted string:', decryptedText);
+                    $('#plaintext').val(decryptedText); // Use the same textarea for decrypted text
+                    if (decryptedText === '') {
+                        $('#error-message').text('Decryption failed: No encrypted data to show').show();
+                    } else {
+                        $('#error-message').hide();
+                    }
+                    const currentUrl = window.location.href.split('?')[0];
+                    const uriEncodedEncryptedText = `${currentUrl}?enc_str=${encodeURIComponent(encryptedText)}&iv=${iv.toString()}&salt=${salt}&ref=${reference}`;
+                    $('#uriEncodedEncryptedText').val(uriEncodedEncryptedText);
+                } catch (e) {
+                    console.error('Decryption failed:', e);
+                    $('#plaintext').val(''); // Clear the textarea in case of error
+                    $('#error-message').text('Decryption failed: Invalid key or corrupted data').show();
+                }
+            };
+
+            const toggleAdvancedFields = () => {
+                const advancedFields = document.getElementById('advanced-fields');
+                const toggleButton = document.querySelector('.btn-info');
+                if (advancedFields.style.display === 'none') {
+                    advancedFields.style.display = 'block';
+                    toggleButton.textContent = 'Hide Advanced';
+                } else {
+                    advancedFields.style.display = 'none';
+                    toggleButton.textContent = 'Show Advanced';
+                }
+            };
+
+            const clearAllFields = () => {
+                $('#plaintext').val('');
+                $('#passphrase').val('');
+                $('#reference').val('');
+                $('#uriEncodedEncryptedText').val('');
+                $('#initializationVector').val('');
+                $('#salt').val('');
+                $('#generatedKey').val('');
+                $('#encryptedText').val('');
+                $('#uriInput').val('');
+                $('#error-message').hide();
+            };
+
+            const copyToClipboard = (selector) => {
+                const element = document.querySelector(selector);
+                element.select();
+                document.execCommand('copy');
+                alert('Copied to clipboard');
+            };
+
+            const populateFieldsFromURI = () => {
+                const uriInput = $('#uriInput').val();
+                const params = getUrlParams(uriInput);
+                console.log('URI Input params:', params);
+                if (params.enc_str) {
+                    console.log('Populating fields with:', params);
+                    $('#encryptedText').val(params.enc_str);
+                    $('#initializationVector').val(params.iv);
+                    $('#salt').val(params.salt);
+                    $('#reference').val(params.ref);
+                    const currentUrl = window.location.href.split('?')[0];
+                    $('#uriEncodedEncryptedText').val(`${currentUrl}?enc_str=${encodeURIComponent(params.enc_str)}&iv=${params.iv}&salt=${params.salt}&ref=${params.ref}`);
+                }
+            };
+
+            $(document).ready(function () {
+                const params = getUrlParams(window.location.search);
+                if (params.enc_str) {
+                    $('#encryptedText').val(params.enc_str);
+                    $('#initializationVector').val(params.iv);
+                    $('#salt').val(params.salt);
+                    $('#reference').val(params.ref);
+                    const currentUrl = window.location.href.split('?')[0];
+                    $('#uriEncodedEncryptedText').val(`${currentUrl}?enc_str=${encodeURIComponent(params.enc_str)}&iv=${params.iv}&salt=${params.salt}&ref=${params.ref}`);
+                }
+            });
+        </script>
+    </main>
+    <p>&nbsp;</p>
+</body>
+</html>

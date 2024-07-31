@@ -1,0 +1,113 @@
+html, body {
+    font-family: "Lato", sans-serif;
+    font-size: 100%;
+    background-color: #FFF;
+    margin: 0;
+    padding: 0;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-family: "centrale_sans_roundedbook", sans-serif;
+    margin-top: 0;
+}
+
+.container {
+    margin-top: 10px;
+}
+
+@media(max-width: 320px) {
+    .container {
+        width: 320px;
+    }
+}
+
+p.m_2 {
+    color: #666666;
+    font-size: 15px;
+    line-height: 24px;
+    margin-bottom: 20px;
+    height: 70px;
+}
+
+@media(max-width: 991px) {
+    p.m_2 {
+        height: auto;
+    }
+}
+
+.company_wrapper {
+    border-top: 1px dotted #c7c7c7;
+    padding: 10px 0 25px 0;
+    width: 100%;
+}
+
+h2.m_2 {
+    font-size: 1.7em;
+    font-weight: 500;
+    color: #666666;
+    margin-bottom: 1em;
+}
+
+h3.m_2 {
+    font-size: 1.2em;
+    font-weight: 500;
+    color: #666666;
+    margin-bottom: 1em;
+}
+
+.header_wrapper {
+    background: #414141;
+    position: relative;
+    padding: 20px 0;
+    margin-bottom: 20px;
+}
+
+.header_wrapper h1 {
+    margin: 0 0 5px 0;
+    line-height: 58px;
+    font-size: 40px;
+    font-weight: 600;
+    color: #FFFFFF;
+}
+
+.button-group {
+    padding-bottom: 15px;
+}
+
+.copy-link {
+    cursor: pointer;
+    color: #007bff;
+    margin-left: 10px;
+    text-decoration: none;
+}
+
+.copy-link:hover {
+    color: #0056b3;
+}
+
+.input-group {
+    width: 100%;
+}
+
+.about-section {
+    background-color: #f0f0f0; /* Light grey background */
+    color: #555555; /* Black text */
+    border-radius: 10px;
+    padding: 20px;
+    margin-top: 20px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+.about-section h4 {
+    margin-top: 0;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #555555; /* Grey border */
+    font-weight: bold;
+    font-size: 1.5rem;
+}
+.about-section a {
+    color: #007AFF; /* Blue links */
+    text-decoration: none;
+}
+.about-section a:hover {
+    text-decoration: underline;
+}
