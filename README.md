@@ -59,7 +59,7 @@ Additional features and fields:
 
 ## Buttons
 
-- **Encrypt**: Encrypt the provided text using the given passphrase and reference.
+- **Encrypt**: Encrypt the provided text using the given passphrase.
 - **Decrypt**: Decrypt the provided encrypted text using the given passphrase, IV, and salt.
 - **Show Advanced**: Toggle the visibility of advanced fields (IV, salt, generated key, encrypted text).
 - **Clear**: Clear all input and output fields in the form.
