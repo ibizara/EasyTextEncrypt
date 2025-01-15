@@ -1,6 +1,10 @@
 # How to Use
 
-This application provides a simple interface for encrypting and decrypting text using AES-256 in CBC mode. Below are detailed instructions on how to use the various features of the application.
+This application provides a simple interface for encrypting and decrypting text using AES-256 in CBC mode.
+
+A **live demo** is available at [https://ibizara.github.io/EasyTextEncrypt/](https://ibizara.github.io/EasyTextEncrypt/). 
+
+Below are detailed instructions on how to use the various features of the application.
 
 ## 1. Encrypt
 
